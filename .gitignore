@@ -7,6 +7,7 @@ poem1
 poemEdited
 sayableBigrams.json
 sayableBigramsShort.json
+cmudict_syl.txt
 
 # Logs
 logs
