@@ -1,3 +1,13 @@
+bigrams.json
+bigrams.txt
+cmudict_syl.json
+letterpress.json
+letterpress.txt
+poem1
+poemEdited
+sayableBigrams.json
+sayableBigramsShort.json
+
 # Logs
 logs
 *.log
