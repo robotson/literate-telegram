@@ -1,0 +1,18 @@
+LITERATE TELEGRAM
+
+demo version 0.1
+
+Right now it's just a few datasets parsed into giant json objects.
+I'd like to create a database to represent this stuff.
+There is a question of which type of system would be the best for our use case.
+Right now, I'm sticking with a MEAN stack for ease of use, but I may want to
+check out Postgres in the future.
+
+In any case, right now I just have a basic markov poem bot function spitting
+out tweet length strings. I need to rework my datasets into a mongoDB document
+collection database. I need a pronunciation model, a word pair model with 
+embedded pronunciation, filtered down by the scrabble dictionary to screen out 
+all kinds of propper names and so on.
+
+Lets go!
+

@@ -4,8 +4,6 @@ let app = express();
 let fs = require('fs');
 var randomPoem = require('./tools/poemBuilder1.js')
 
-
-
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
