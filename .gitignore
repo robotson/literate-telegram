@@ -2,6 +2,7 @@ bigrams.json
 bigramCount.json
 bigrams.txt
 bigramscopy.txt
+bigramlistByCount.txt
 
 letterpress.json
 letterpress.txt
