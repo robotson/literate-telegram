@@ -1,7 +1,7 @@
 "use strict";
 let fs = require('fs');
 let path = require('path');
-let CMU = require('../cmudict_syl.json');
+let CMU = require('./cmudict_syl.json');
 let ShortList = require('./letterpress.json');
 
 (function(textFile, name){

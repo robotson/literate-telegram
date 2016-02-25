@@ -1,10 +1,196 @@
-<html>
+<html ng-app="literate-telegram">
 <head>
-<title>LITERATE TELEGRAM</title>
+  <title>LITERATE TELEGRAM</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto+Slab' rel='stylesheet' type='text/css'>
+  <style>
+    body{font-family:'Roboto Slab', serif; color: yellow; background-color: black; padding: 0 250px;}
+    h1{font-size:5em;}
+  </style>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
+  <script>
+
+(function(){
+
+angular.module('literate-telegram', [])
+  .controller('TelegramsController', TelegramsController)
+  .factory('WordPairFactory', WordPairFactory)
+  // .factory('PronunciationFactory', PronunciationFactory)
+  
+function TelegramsController(WordPairFactory, $anchorScroll, $interval, $timeout){
+  var $ctrl = this;
+  var _TOTALCOUNT = 140;
+  var _TOTALCHARS = 12;
+  var lastPick;
+  var oldBuffer = "";
+  var buffer = "";
+  var rendering = false;
+  $ctrl.display = ""
+  $ctrl.renderQueue = [];
+  $ctrl.done = [];
+
+  startPoem();
+  $interval(render, 500);
+    
+  function charCount () {
+    if(_TOTALCHARS > 46){
+      _TOTALCHARS = Math.floor(Math.random() * 34) + 12;
+    }
+    return _TOTALCHARS++;
+  }
+
+  function startPoem () {
+    console.log("starting poem");
+      if(buffer.length > charCount()){
+        var temp = buffer.match(/\S+/g);
+
+        while(temp.length > 1 && temp[temp.length-1].length < 5){
+          console.log(temp);
+          temp.pop();
+          lastPick = {};
+          lastPick.bKey = temp[temp.length-1];
+        }
+        $ctrl.renderQueue.push(temp.join(" "));
+        buffer = "";
+        return;
+      }
+      WordPairFactory.random(function(res){
+        buffer += res.data.bKey + " ";
+        lastPick = res.data;
+        nextWord(res.data);
+
+      }, fail)
+
+    }
+
+  function nextWord (pair) {
+    console.log("next word poem");
+    if(buffer.length > charCount()){
+      var temp = buffer.match(/\S+/g);
+      while(temp.length > 1 && temp[temp.length-1].length < 5){
+        temp.pop();
+        lastPick = {};
+        lastPick.bKey = temp[temp.length-1];
+      }
+      $ctrl.renderQueue.push(temp.join(" "));
+      buffer = "";
+      return;
+    }
+    
+    WordPairFactory.next(pair, function(res){
+      if(!res.data.length) {
+        startPoem();
+      }
+      else{
+        var pick = res.data[Math.floor(Math.random() * res.data.length)]
+        buffer += pick.bKey + " ";
+        lastPick = pick;
+        nextWord(pick);
+      }
+    }, fail)
+
+  }
+
+  function render() {
+    if(!$ctrl.renderQueue.length || rendering === true) return false;
+    var temp = $ctrl.renderQueue.shift();
+    speak(temp);
+    var letters = temp.split("");
+    
+    renderHelper();
+
+    function renderHelper () {
+      rendering = true;
+      if(!letters.length){
+        if($ctrl.display.length > _TOTALCOUNT) 
+        {
+            $ctrl.done.push($ctrl.display);
+            console.log($ctrl.done);
+            $ctrl.display = "";
+            $timeout(function(){
+              rendering = false;
+              console.log('restarting code');
+              startPoem();
+            }, 1150)
+            return "literate-telegram";
+        }
+        $ctrl.display += " "
+        $anchorScroll('end');
+        rendering = false;
+        if($ctrl.renderQueue.length){
+          render();
+          return;
+        }
+        return;
+      }
+      $timeout(function(){
+        $ctrl.display += letters.shift()
+        $anchorScroll('end');
+        renderHelper();
+      }, 49);
+    }
+
+  }
+
+  function speak (someWords) {
+    try{
+      var msg = new SpeechSynthesisUtterance(someWords);
+      window.speechSynthesis.speak(msg);
+      nextWord(lastPick);
+    }
+    catch (e){ console.log(e)}
+  }
+
+  function fail (res) {
+    console.log(res.data)
+  }
+
+}//end Telegrams Controller
+
+
+function WordPairFactory ($http) {
+  return {next:next, random: random};
+
+  function next (pair, success, failure) {
+    $http.post('/word-pairs/next', pair).then(function(res){
+      success(res);
+    }, failure);
+
+  }
+
+  function random (success, failure) {
+    $http.get('/word-pairs/random').then(success, failure);
+
+  }
+
+}//end WordPair Factory
+
+// function PronunciationFactory ($http) {
+
+//   return {show:show};
+
+//   function show (key, success, failure) {
+
+//     $http.post('/pronunciation', key).then(success, failure);
+
+//   }
+
+// }//end Pronunciation Factory
+
+})();
+  </script>
 </head>
-<body>
-<h1>HELLOWALRUS</h1>
-<h4>and other bigrams</h4>
-<h6>A Love Story</h6>
+
+<body ng-controller="TelegramsController as telegram">
+<h1 ng-repeat="line in telegram.done"><span ng-bind="line"></span></h1>
+
+
+<h1> 
+<span ng-bind="telegram.display"></span>
+
+</h1>
+  
+  <p id="end"></p>
+
 </body>
 </html>
